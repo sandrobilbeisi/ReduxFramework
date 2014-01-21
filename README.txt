@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: admin, admin interface, options, theme options, plugin options, options framework, settings
 Requires at least: 3.5.1
 Tested up to: 3.8
-Stable tag: 3.1.4
+Stable tag: 3.1.5
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -38,6 +38,7 @@ It is hard to continue development and support for this free plugin without cont
 
 * Border
 * Button Set
+* Background
 * Checkbox / Multi-Check
 * Color (WordPress Native)
 * Gradient
@@ -54,6 +55,7 @@ It is hard to continue development and support for this free plugin without cont
 * Password
 * Radio (w/ WordPress Data)
 * Select (Select/Multi-Select w/ Select2 & WordPress Data)
+* Select Image
 * Slider
 * Sortable (Drag/Drop Checkbox/Input Fields)
 * Sorter (Drag/Drop Manager - Works great for content blocks)
@@ -138,6 +140,22 @@ That's because the real FAQ section is on our site! Please visit [http://reduxfr
 1. This is the demo mode of Redux Framework. Activate it and you will find a fully-functional admin panel that you can play with. On the Plugins page, beneath the description and an activated Redux Framework, you will find a Demo Mode link. Click that link to activate or deactivate the sample-config file Redux ships with.  Don't take our word for it, check out our online demo and try Redux without installing a thing! [**http://demo.reduxframework.com/wp-admin/**](http://demo.reduxframework.com/wp-admin/)
 
 == Changelog ==
+
+= 3.1.5 =
+* Typography font arrays may not contain comma spaces.
+* Merge in pull request - 542, code cleanup and better readability
+* Change how HTML is output to support metaboxes
+* CSS only on pages that matter, better checks.
+* font-backup in typography now appends to font-family in output and compiler.
+* More fixes for Google font css outputting.
+* Addded output and compiler to field_image_select.  Images will be output as 'background-image'.
+* Fixed output in field_background.
+* Prevent standard fonts from outputting to Google fonts CSS call.
+* class_exists in field_section checking for incorrect classname.
+* sample_config fix.
+* Compiler not outputting CSS without output set to comthing other than false.
+* Google fonts not rendering on frontend.
+* Rewrote sample_config as a class
 
 = 3.1.4 =
 * Fixed error in redux-framework.php.

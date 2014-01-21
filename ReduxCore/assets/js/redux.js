@@ -121,8 +121,14 @@
             check_data	= current.data(), 
             value2		= check_data.checkValue, 
             show		= false,
+            infoFieldID = '',
             value2_array;
 			
+			var testInfoField = current.find('.redux-field:first');
+			if (testInfoField.hasClass('redux-container-info')) {
+				infoFieldID = current.find('.redux-container-info').data('id');
+			}    
+
             if(!is_hidden){
                 switch(check_data.checkComparison){
 					case '=':
@@ -194,16 +200,23 @@
             }
 				
             if(show === true && current.is('.hiddenFold')){
-                current.css({
-                    display:'none'
+				if (infoFieldID !== "") {
+					$('#info-'+infoFieldID).css({display:'none'}).fadeIn(300).show();
+				}
+				current.css({
+					display:'none'
                 }).removeClass('hiddenFold').find('select, radio, input[type=checkbox]').trigger('change');
                 current.fadeIn(300);
             }else if(show === false  && !current.is('.hiddenFold')){
+				if (infoFieldID !== "") {
+					$('#info-'+infoFieldID).css({display:''}).fadeOut(300).hide();
+				}
                 current.css({
                     display:''
                 }).addClass('hiddenFold').find('select, radio, input[type=checkbox]').trigger('change');
                 current.fadeOut(300);
             }
+
 			//$.redux.verify_fold($(variable)); 
         });
 	};
@@ -243,6 +256,7 @@
 				$.each(theChildren, function(index) {
 
 					var parent = scope.find('tr[data-check-id="'+index+'"]');
+
 					
 					if ( theChildren[index].show === true ) {
 
@@ -479,7 +493,9 @@ jQuery(document).ready(function($) {
 		// Show the group
 		jQuery('#' + oldid + '_section_group').hide();
 		jQuery('#' + relid + '_section_group').fadeIn(200, function() {
-			stickyInfo(); // race condition fix
+			if (jQuery('#redux-footer').length !== 0) {
+				stickyInfo(); // race condition fix
+			}
 		});
 		jQuery('#' + relid + '_section_group_li').addClass('active');
 	});
@@ -526,21 +542,22 @@ jQuery(document).ready(function($) {
 		}
 		window.onbeforeunload = null;
 	});	
-	jQuery('#expand_options').click(function(e) {
-		e.preventDefault();
-		var trigger = jQuery('#expand_options');
-		var width = jQuery('#redux-sidebar').width();
-		var id = jQuery('#redux-group-menu .active a').data('rel') + '_section_group';
+
+	function redux_expand_options(parent) {
+		console.log('here');
+		var trigger = parent.find('.expand_options');
+		var width = parent.find('.redux-sidebar').width();
+		var id = jQuery('.redux-group-menu .active a').data('rel') + '_section_group';
 		if (trigger.hasClass('expanded')) {
 			trigger.removeClass('expanded');
-			jQuery('.redux-main').removeClass('expand');
-			jQuery('#redux-sidebar').stop().animate({
+			parent.find('.redux-main').removeClass('expand');
+			parent.find('.redux-sidebar').stop().animate({
 				'margin-left': '0px'
 			}, 500);
-			jQuery('.redux-main').stop().animate({
+			parent.find('.redux-main').stop().animate({
 				'margin-left': width
 			}, 500);
-			jQuery('.redux-group-tab').each(function() {
+			parent.find('.redux-group-tab').each(function() {
 				if (jQuery(this).attr('id') !== id) {
 					jQuery(this).fadeOut('fast');
 				}
@@ -548,15 +565,22 @@ jQuery(document).ready(function($) {
 			// Show the only active one
 		} else {
 			trigger.addClass('expanded');
-			jQuery('.redux-main').addClass('expand');
-			jQuery('#redux-sidebar').stop().animate({
-				'margin-left': -width - 2
+			parent.find('.redux-main').addClass('expand');
+			parent.find('.redux-sidebar').stop().animate({
+				'margin-left': -width - 102
 			}, 500);
-			jQuery('.redux-main').stop().animate({
+			parent.find('.redux-main').stop().animate({
 				'margin-left': '0px'
 			}, 500);
-			jQuery('.redux-group-tab').fadeIn();
+			parent.find('.redux-group-tab').fadeIn();
 		}
+		return false;
+	}
+
+	jQuery('.expand_options').click(function(e) {
+		e.preventDefault();
+
+		redux_expand_options(jQuery(this).parents('.redux-container:first'));
 		return false;
 	});
 	jQuery('#redux-import').click(function(e) {

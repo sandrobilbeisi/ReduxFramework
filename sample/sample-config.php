@@ -1204,7 +1204,14 @@ $sections[] = array(
 						'mode' => false, // Can be set to false to allow any media type, or can also be set to any mime type.
 						'desc'=> __('Basic media uploader with disabled URL input field.', 'redux-framework-demo'),
 						'subtitle' => __('Upload any media using the WordPress native uploader', 'redux-framework-demo'),
-						),				
+						),	
+					array(
+                         'id'=>'section-media-start',
+                         'type' => 'section', 
+                         'title' => __('Media Options', 'redux-framework-demo'),
+                         'subtitle'=> __('With the "section" field you can create indent option sections.', 'redux-framework-demo'),                            
+                         'indent' => true // Indent all options below until the next 'section' option is set.
+                         ),    									
 					array(
 						'id'=>'media',
 						'type' => 'media', 
@@ -1216,7 +1223,11 @@ $sections[] = array(
 						'subtitle' => __('Upload any media using the WordPress native uploader', 'redux-framework-demo'),
 						'default'=>array('url'=>'http://s.wordpress.org/style/images/codeispoetry.png'),
 						),
-
+					array(
+                         'id'=>'section-media-end',
+                         'type' => 'section', 
+                         'indent' => false // Indent all options below until the next 'section' option is set.
+                         ),  
 					array(
 						'id'=>'media-nourl',
 						'type' => 'media', 
@@ -1322,7 +1333,7 @@ $sections[] = array(
 			            "title" => "Layout Manager Advanced",
 			            "subtitle" => "You can add multiple drop areas or columns.",
 			            "compiler"=>'true',
-			            'required' => array('switch-fold','equals','0'),	
+			            //'required' => array('switch-fold','equals','0'),	
 			            'options' => array(
 			                "enabled" => array(
 			                    "placebo" => "placebo", //REQUIRED!
@@ -1337,6 +1348,10 @@ $sections[] = array(
 			                "backup" => array(
 			                    "placebo" => "placebo", //REQUIRED!
 			                ),                
+			            ),
+			            'limits' => array(
+			            	"disabled" => 1,
+			            	"backup" => 2,
 			            ),
 			        ),
 			        array(
@@ -1592,7 +1607,16 @@ global $redux_demo; // This is your opt_name.
 						'subtitle' => __('Pick a background color for the theme (default: #fff).', 'redux-framework-demo'),
 						'default' => '#FFFFFF',
 						'validate' => 'color',
-						),		
+						),	
+					array(
+						'id'=>'body-background',
+						'type' => 'background',
+						'output' => array('body'),
+						'title' => __('Body Background', 'redux-framework-demo'), 
+						'subtitle' => __('Body background with image, color, etc.', 'redux-framework-demo'),
+						//'default' => '#FFFFFF',
+						//'validate' => 'color',
+						),	
 					array(
 						'id'=>'color-footer',
 						'type' => 'color',
@@ -1669,7 +1693,7 @@ global $redux_demo; // This is your opt_name.
 						'subtitle' => __('Allow your users to choose width, height, and/or unit.', 'redux-framework-demo'),
 						'desc' => __('You can enable or disable any piece of this field. Width, Height, or Units.', 'redux-framework-demo'),
 						'default' => array('width' => 200, 'height'=>'100', )
-						),												
+						),																
 					array(
 						'id'=>'body-font2',
 						'type' => 'typography',
@@ -1679,7 +1703,7 @@ global $redux_demo; // This is your opt_name.
 						'default' => array(
 							'color'=>'#dd9933',
 							'font-size'=>'30px',
-							'font-family'=>'Arial, Helvetica, sans-serif',
+							'font-family'=>'Arial,Helvetica,sans-serif',
 							'font-weight'=>'Normal',
 							),
 						),					
@@ -2449,7 +2473,7 @@ add_filter('redux/options/redux_demo/compiler', 'testCompiler', 10, 2);
 	            // CAREFUL -> These options are for advanced use only
 	            'transient_time' 	 	=> 60 * MINUTE_IN_SECONDS,
 	            'output'            	=> true, // Global shut-off for dynamic CSS output by the framework. Will also disable google fonts output
-	            'output_tab'            => true, // Allows dynamic CSS to be generated for customizer and google fonts, but stops the dynamic CSS from going to the head
+	            'output_tag'            	=> true, // Allows dynamic CSS to be generated for customizer and google fonts, but stops the dynamic CSS from going to the head
 	            //'domain'             	=> 'redux-framework', // Translation domain key. Don't change this unless you want to retranslate all of Redux.
 	            //'footer_credit'      	=> '', // Disable the footer credit of Redux. Please leave if you can help it.
 	            
