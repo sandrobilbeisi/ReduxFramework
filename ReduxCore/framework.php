@@ -16,7 +16,7 @@
  * @package     Redux_Framework
  * @subpackage  Core
  * @author      Redux Framework Team
- * @version     3.1.4 
+ * @version     3.1.5
  */
 
 // Exit if accessed directly
@@ -51,7 +51,7 @@ if( !class_exists( 'ReduxFramework' ) ) {
         // ATTENTION DEVS
         // Please update the build number with each push, no matter how small.
         // This will make for easier support when we ask users what version they are using.
-        public static $_version = '3.1.5.1';
+        public static $_version = '3.1.5.2';
         public static $_dir;
         public static $_url;
         public static $_properties;
@@ -208,7 +208,7 @@ if( !class_exists( 'ReduxFramework' ) ) {
         }// ::init() 
 
         public $framework_url       = 'http://www.reduxframework.com/';
-        public $instance            = null;
+        static $instance            = null;
         public $page                = '';
         public $args                = array(
             'opt_name'           => '', // Must be defined by theme/plugin
@@ -377,14 +377,14 @@ if( !class_exists( 'ReduxFramework' ) ) {
                 //add_action( 'init', array( &$this, '_set_default_options' ), 101 );
 
                 // Options page
-                add_action( 'admin_menu', array( &$this, '_options_page' ) );
+                add_action( 'admin_menu', array( $this, '_options_page' ) );
 
                 // Register setting
-                add_action( 'admin_init', array( &$this, '_register_settings' ) );
+                add_action( 'admin_init', array( $this, '_register_settings' ) );
 
                 // Enqueue the admin page CSS and JS
                 if ( isset( $_GET['page'] ) && $_GET['page'] == $this->args['page_slug'] ) {
-                    add_action( 'admin_enqueue_scripts', array( &$this, '_enqueue' ) );
+                    add_action( 'admin_enqueue_scripts', array( $this, '_enqueue' ) );
                 }
 
                 // Any dynamic CSS output, let's run
@@ -397,7 +397,11 @@ if( !class_exists( 'ReduxFramework' ) ) {
                 //add_action( 'init', array( &$this, '_internationalization' ), 100 );            
 
                 // Hook into the WP feeds for downloading exported settings
-                add_action( "do_feed_reduxopts-{$this->args['opt_name']}", array( &$this, '_download_options' ), 1, 1 );
+                add_action( "do_feed_redux_options_{$this->args['opt_name']}", array( $this, '_download_options' ), 1, 1 );
+
+                // Hook into the WP feeds for downloading exported settings
+                add_action( "do_feed_redux_settings_{$this->args['opt_name']}", array( $this, '_download_settings' ), 1, 1 );
+
 
             }
 
@@ -440,7 +444,7 @@ if( !class_exists( 'ReduxFramework' ) ) {
          * @return ReduxFramework
          */
         public function get_instance() {
-            return $this->instance;
+            return self::$instance;
         } // get_instance()
 
         public function _tracking() {
@@ -1078,7 +1082,10 @@ if( !class_exists( 'ReduxFramework' ) ) {
          */
         public function _enqueue_output() {
 
-            if( $this->args[ 'output' ] == false ) {
+
+
+
+            if( $this->args[ 'output' ] == false && $this->args[ 'compiler' ] == false ) {
                 return;
             }
 
@@ -1140,6 +1147,7 @@ if( !class_exists( 'ReduxFramework' ) ) {
                 //wp_register_style( 'redux-google-fonts', $typography->makeGoogleWebfontLink( $this->typography ), '', $version );
                 //wp_enqueue_style( 'redux-google-fonts' ); 
             }
+
 
         } // _enqueue_output()     
 
@@ -1443,7 +1451,7 @@ if( !class_exists( 'ReduxFramework' ) ) {
             $this->get_options();
             $backup_options = $this->options;
             $backup_options['redux-backup'] = '1';
-            $content = json_encode( $backup_options );
+            $content = json_encode( $backup_options, true );
 
             if( isset( $_GET['action'] ) && $_GET['action'] == 'download_options' ) {
                 header( 'Content-Description: File Transfer' );
@@ -1469,6 +1477,57 @@ if( !class_exists( 'ReduxFramework' ) ) {
                 exit;
             }
         }
+
+        /**
+         * Download the options file, or display it
+         *
+         * @since       3.0.0
+         * @access      public
+         * @return      void
+         */
+        public function _download_settings(){
+            /** @noinspection PhpUndefinedConstantInspection */
+            if( !isset( $_GET['secret'] ) || $_GET['secret'] != md5( AUTH_KEY . SECURE_AUTH_KEY ) ) {
+                wp_die( 'Invalid Secret for options use' );
+                exit;
+            }
+
+            if( !isset( $_GET['feed'] ) ){
+                wp_die( 'No Feed Defined' );
+                exit;
+            }
+            $this->get_options();
+            $settings = array(
+                'args' => $this->args,
+                'sections' => $this->sections,
+                'options' => $this->options,
+            );
+            $content = json_encode( $settings, true );
+
+            if( isset( $_GET['action'] ) && $_GET['action'] == 'download_settings' ) {
+                header( 'Content-Description: File Transfer' );
+                header( 'Content-type: application/txt' );
+                header( 'Content-Disposition: attachment; filename="' . str_replace( 'redux-', '', $_GET['feed'] ) . '_settings_backup_' . date( 'd-m-Y' ) . '.json"' );
+                header( 'Content-Transfer-Encoding: binary' );
+                header( 'Expires: 0' );
+                header( 'Cache-Control: must-revalidate' );
+                header( 'Pragma: public' );
+                echo $content;
+                exit;
+            } else {
+                header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); 
+                header("Last-Modified: " . gmdate( "D, d M Y H:i:s" ) . "GMT"); 
+                header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' );
+                header( 'Cache-Control: no-store, no-cache, must-revalidate' );
+                header( 'Cache-Control: post-check=0, pre-check=0', false );
+                header( 'Pragma: no-cache' );
+
+                // Can't include the type. Thanks old Firefox and IE. BAH.
+                //header("Content-type: application/json");
+                echo $content;
+                exit;
+            }
+        }        
 
         /**
          * Show page help
@@ -1665,6 +1724,12 @@ if( !class_exists( 'ReduxFramework' ) ) {
                             echo '<br /><h3>No field ID is set. Here\'s the field:</h3><pre>';
                             print_r($field);
                             echo "</pre><br />";
+                        }
+                        
+                        $field['name'] = $this->args['opt_name'] . '[' . $field['id'] . ']';
+
+                        if (!empty($th)) {
+                            $th = '<div class="redux_field_th">'.$th.'</div>';
                         }
 
                         // Set the default value if present
@@ -1889,7 +1954,7 @@ if( !class_exists( 'ReduxFramework' ) ) {
                 set_transient( 'redux-compiler-' . $this->args['opt_name'], '1', 1000 );
                 $plugin_options = $this->options_defaults;
                 $plugin_options['REDUX_COMPILER'] = time();
-                //$this->set_options( $plugin_options );
+                $this->set_options( $plugin_options );
                 return $plugin_options;
             }
             if( isset( $plugin_options['defaults-section'] ) ) {
@@ -1913,7 +1978,7 @@ if( !class_exists( 'ReduxFramework' ) ) {
                 }
                 $plugin_options['defaults'] = true;
                 unset( $plugin_options['compiler'], $plugin_options['import'], $plugin_options['import_code'], $plugin_options['redux-section'] );
-                //$this->set_options( $plugin_options );
+                $this->set_options( $plugin_options );
                 return $plugin_options;
             }            
 
@@ -1922,7 +1987,7 @@ if( !class_exists( 'ReduxFramework' ) ) {
 
             if( !empty( $this->errors ) || !empty( $this->warnings ) ) {
                 set_transient( 'redux-notices-' . $this->args['opt_name'], array( 'errors' => $this->errors, 'warnings' => $this->warnings ), 1000 );
-            }    
+            }              
 
             /**
              * action 'redux-validate-{opt_name}'
@@ -1962,7 +2027,7 @@ if( !class_exists( 'ReduxFramework' ) ) {
         public function _validate_values( $plugin_options, $options ) {
             foreach( $this->sections as $k => $section ) {
                 if( isset( $section['fields'] ) ) {
-                    foreach( $section['fields'] as $field ) {
+                    foreach( $section['fields'] as $fkey => $field ) {
                         $field['section_id'] = $k;
 
                         if( isset( $field['type'] ) && ( $field['type'] == 'checkbox' || $field['type'] == 'checkbox_hide_below' || $field['type'] == 'checkbox_hide_all' ) ) {
@@ -2022,7 +2087,12 @@ if( !class_exists( 'ReduxFramework' ) ) {
                                             $after = $options[$field['id']][$key];
                                         }                                        
                                         $validation = new $validate( $field, $before, $after );
-                                        $plugin_options[$field['id']][$key] = $validation->value;
+                                        if ( !empty( $validation->value ) ) {
+                                            $plugin_options[$field['id']][$key] = $validation->value;    
+                                        } else {
+                                            unset( $plugin_options[$field['id']][$key] );
+                                        }
+                                        
                                         if( isset( $validation->error ) ) {
                                             $this->errors[] = $validation->error;
                                         }
@@ -2375,14 +2445,14 @@ if( !class_exists( 'ReduxFramework' ) ) {
 
 
                 /** @noinspection PhpUndefinedConstantInspection */
-                echo '<p><a href="javascript:void(0);" id="redux-export-code-copy" class="button-secondary">' . __( 'Copy', $this->args['domain'] ) . '</a> <a href="' . add_query_arg( array( 'feed' => 'reduxopts-' . $this->args['opt_name'], 'action' => 'download_options', 'secret' => md5( AUTH_KEY . SECURE_AUTH_KEY ) ), site_url() ) . '" id="redux-export-code-dl" class="button-primary">' . __( 'Download', $this->args['domain'] ) . '</a> <a href="javascript:void(0);" id="redux-export-link" class="button-secondary">' . __( 'Copy Link', $this->args['domain'] ) . '</a></p>';
+                echo '<p><a href="javascript:void(0);" id="redux-export-code-copy" class="button-secondary">' . __( 'Copy', $this->args['domain'] ) . '</a> <a href="' . add_query_arg( array( 'feed' => 'redux_options_' . $this->args['opt_name'], 'action' => 'download_options', 'secret' => md5( AUTH_KEY . SECURE_AUTH_KEY ) ), site_url() ) . '" id="redux-export-code-dl" class="button-primary">' . __( 'Download', $this->args['domain'] ) . '</a> <a href="javascript:void(0);" id="redux-export-link" class="button-secondary">' . __( 'Copy Link', $this->args['domain'] ) . '</a></p>';
                 $backup_options = $this->options;
                 $backup_options['redux-backup'] = '1';
                 echo '<textarea class="large-text noUpdate" id="redux-export-code" rows="8">';
                 print_r( json_encode( $backup_options ) );
                 echo '</textarea>';
                 /** @noinspection PhpUndefinedConstantInspection */
-                echo '<input type="text" class="large-text noUpdate" id="redux-export-link-value" value="' . add_query_arg( array( 'feed' => 'reduxopts-' . $this->args['opt_name'], 'secret' => md5( AUTH_KEY.SECURE_AUTH_KEY ) ), site_url() ) . '" />';
+                echo '<input type="text" class="large-text noUpdate" id="redux-export-link-value" value="' . add_query_arg( array( 'feed' => 'redux_options_' . $this->args['opt_name'], 'secret' => md5( AUTH_KEY.SECURE_AUTH_KEY ) ), site_url() ) . '" />';
 
                 echo '</div>';
             }
@@ -2630,6 +2700,12 @@ if( !class_exists( 'ReduxFramework' ) ) {
                     ob_start();
                     /** @noinspection PhpUndefinedMethodInspection */
                     $render->render();
+                    /*
+                    
+                    echo "<pre>";
+                    print_r($value);
+                    echo "</pre>";
+                    */
                        /**
                      * filter 'redux-field-{opt_name}'
                      * @deprecated
@@ -2672,7 +2748,7 @@ if( !class_exists( 'ReduxFramework' ) ) {
                      */
                     do_action( "redux/field/{$this->args['opt_name']}/fieldset/before/{$this->args['opt_name']}", $field, $value );
                     
-                    echo '<fieldset id="'.$this->args['opt_name'].'-'.$field['id'].'" class="redux-field redux-container-'.$field['type'].' '.$class_string.'" data-id="'.$field['id'].'" '.$data_string.'>';
+                    echo '<fieldset id="'.$this->args['opt_name'].'-'.$field['id'].'" class="redux-field-container redux-field redux-container-'.$field['type'].' '.$class_string.'" data-id="'.$field['id'].'" '.$data_string.'>';
                         echo $_render;
 
                         if (!empty($field['desc'])) {

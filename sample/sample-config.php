@@ -1336,17 +1336,14 @@ $sections[] = array(
 			            //'required' => array('switch-fold','equals','0'),	
 			            'options' => array(
 			                "enabled" => array(
-			                    "placebo" => "placebo", //REQUIRED!
 			                    "highlights" => "Highlights",
 			                    "slider" => "Slider",
 			                    "staticpage" => "Static Page",
 			                    "services" => "Services"
 			                ),
 			                "disabled" => array(
-			                    "placebo" => "placebo", //REQUIRED!
 			                ),
 			                "backup" => array(
-			                    "placebo" => "placebo", //REQUIRED!
 			                ),                
 			            ),
 			            'limits' => array(
@@ -1361,15 +1358,13 @@ $sections[] = array(
 			            "desc" => "Organize how you want the layout to appear on the homepage",
 			            "compiler"=>'true',
 			            'options' => array(
-			                "enabled" => array(
-			                    "placebo" => "placebo", //REQUIRED!
+			                "disabled" => array(
 			                    "highlights" => "Highlights",
-			                    "slider" => "Slider",
+			                    "slider" => "Slider",			                    
+			                ),
+			                "enabled" => array(
 			                    "staticpage" => "Static Page",
 			                    "services" => "Services"
-			                ),
-			                "disabled" => array(
-			                    "placebo" => "placebo", //REQUIRED!
 			                ),
 			            ),
 			        ),        
@@ -1566,6 +1561,16 @@ global $redux_demo; // This is your opt_name.
 						'desc' => 'Possible modes can be found at <a href="http://ace.c9.io" target="_blank">http://ace.c9.io/</a>.',
 			            'default' => "jQuery(document).ready(function(){\n\n});"
 						),
+			        array(
+						'id'=>'php-code',
+						'type' => 'ace_editor',
+						'title' => __('JS Code', 'redux-framework-demo'), 
+						'subtitle' => __('Paste your JS code here.', 'redux-framework-demo'),
+						'mode' => 'php',
+			            'theme' => 'chrome',
+						'desc' => 'Possible modes can be found at <a href="http://ace.c9.io" target="_blank">http://ace.c9.io/</a>.',
+			            'default' => "jQuery(document).ready(function(){\n\n});"
+						),			        
 
 					array(
 						'id'=>'footer-text',
@@ -2399,7 +2404,6 @@ add_filter('redux/options/redux_demo/compiler', 'testCompiler', 10, 2);
 						)
 					),   
 				);
-
 
 			if(file_exists(trailingslashit(dirname(__FILE__)) . 'README.html')) {
 			    $tabs['docs'] = array(
